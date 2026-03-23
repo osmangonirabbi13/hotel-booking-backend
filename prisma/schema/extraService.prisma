@@ -1,0 +1,12 @@
+model ExtraService {
+  id            String             @id @default(cuid())
+  serviceName   String
+  serviceAmount Float
+  isActive      Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  rooms         RoomExtraService[]
+
+  @@map("extra_services")
+}

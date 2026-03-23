@@ -1,0 +1,80 @@
+model Room {
+  id                String   @id @default(cuid())
+
+  // Basic Details
+  rent              Float
+  totalUnits        Int
+  roomSize          Float?
+  numberOfBaths     Int
+  maxGuests         Int
+  maxAdults         Int?
+  maxChildren       Int?
+
+  // Category & Bed Type
+  categoryId        String
+  bedTypeId         String
+
+  category          RoomCategory @relation(fields: [categoryId], references: [id])
+  bedType           BedType      @relation(fields: [bedTypeId], references: [id])
+
+  // Toggles
+  isEventSpace         Boolean @default(false)
+  isFeatured           Boolean @default(false)
+  isActive             Boolean @default(true)
+  enableDynamicPricing Boolean @default(false)
+
+  // Images
+  featuredImage     String?
+  sliderImages      String[]
+
+  
+  roomTitle    String?
+  featuredTitle  String?
+  description   String? @db.Text
+  
+
+  // SEO
+  seoTitle          String?
+  seoDescription    String? @db.Text
+
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  adminId           String?
+  admin             Admin?             @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  amenities         RoomAmenity[]
+  extraServices     RoomExtraService[]
+  bookings          Booking[]
+  reviews           Review[]
+
+  @@index([categoryId])
+  @@index([bedTypeId])
+  @@index([adminId])
+  @@index([isActive, isFeatured])
+  @@map("rooms")
+}
+
+model RoomAmenity {
+  roomId    String
+  amenityId String
+
+  room      Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  amenity   Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, amenityId])
+  @@map("room_amenities")
+}
+
+model RoomExtraService {
+  roomId         String
+  extraServiceId String
+
+  room           Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  extraService   ExtraService @relation(fields: [extraServiceId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, extraServiceId])
+  @@map("room_extra_services")
+}

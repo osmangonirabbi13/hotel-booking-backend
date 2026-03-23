@@ -1,0 +1,18 @@
+model Customer {
+  id            String   @id @default(cuid())
+  profilePhoto  String?
+  contactNumber String?
+  address       String?
+  isDeleted     Boolean  @default(false)
+  deletedAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId        String   @unique
+  // user          User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  reviews       Review[]
+
+  @@index([isDeleted], name: "idx_customer_isDeleted")
+  @@map("customers")
+}

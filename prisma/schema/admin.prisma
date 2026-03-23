@@ -1,0 +1,17 @@
+model Admin {
+  id            String   @id @default(cuid())
+  profilePhoto  String?
+  contactNumber String?
+  isDeleted     Boolean  @default(false)
+  deletedAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId        String   @unique
+//   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  rooms         Room[]
+
+  @@index([isDeleted])
+  @@map("admins")
+}
