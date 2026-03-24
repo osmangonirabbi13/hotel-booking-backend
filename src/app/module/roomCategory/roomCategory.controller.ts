@@ -28,7 +28,22 @@ const getAllRoomCategories = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateRoomCategory = catchAsync(async (req: Request, res: Response) => {
+  const result = await RoomCategoryService.updateRoomCategory(
+    req.params.id as string,
+    req.body
+  );
+
+  sendResponse(res, {
+    httpStatusCode: httpStatus.OK,
+    success: true,
+    message: "Room category updated successfully",
+    data: result,
+  });
+});
+
 export const RoomCategoryController = {
   createRoomCategory,
-  getAllRoomCategories
+  getAllRoomCategories,
+  updateRoomCategory,
 };
