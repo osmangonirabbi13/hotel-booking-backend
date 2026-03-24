@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signing in with Google</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans:  ['DM Sans', 'sans-serif'],
+              serif: ['DM Serif Display', 'serif'],
+            },
+            keyframes: {
+              cardIn: {
+                '0%':   { opacity: '0', transform: 'translateY(24px) scale(0.97)' },
+                '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+              },
+              logoIn: {
+                '0%':   { opacity: '0', transform: 'scale(0.7) rotate(-10deg)' },
+                '100%': { opacity: '1', transform: 'scale(1) rotate(0deg)' },
+              },
+              fadeUp: {
+                '0%':   { opacity: '0', transform: 'translateY(12px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              dotPulse: {
+                '0%, 80%, 100%': { transform: 'scale(0.8)', opacity: '0.4' },
+                '40%':           { transform: 'scale(1.2)', opacity: '1'   },
+              },
+            },
+            animation: {
+              cardIn:  'cardIn 0.6s cubic-bezier(0.22,1,0.36,1) both',
+              logoIn:  'logoIn 0.5s 0.15s cubic-bezier(0.22,1,0.36,1) both',
+              fadeUp1: 'fadeUp 0.5s 0.25s both',
+              fadeUp2: 'fadeUp 0.5s 0.32s both',
+              fadeUp3: 'fadeUp 0.5s 0.40s both',
+              fadeUp4: 'fadeUp 0.5s 0.48s both',
+              fadeUp5: 'fadeUp 0.5s 0.55s both',
+              dot1:    'dotPulse 1.4s 0.0s ease-in-out infinite',
+              dot2:    'dotPulse 1.4s 0.2s ease-in-out infinite',
+              dot3:    'dotPulse 1.4s 0.4s ease-in-out infinite',
+              dot4:    'dotPulse 1.4s 0.6s ease-in-out infinite',
+            },
+          },
+        },
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+    <style>
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse 60% 50% at 20% 60%, rgba(66,133,244,0.07) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 40% at 80% 30%, rgba(234,67,53,0.05) 0%, transparent 60%),
+          radial-gradient(ellipse 40% 60% at 50% 80%, rgba(52,168,83,0.04) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+        background-size: 48px 48px;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .progress-fill {
+        width: 0%;
+        animation: progressAnim 2.5s 0.5s cubic-bezier(0.4,0,0.2,1) forwards;
+      }
+      @keyframes progressAnim {
+        0%   { width: 0%;  }
+        40%  { width: 55%; }
+        70%  { width: 75%; }
+        90%  { width: 88%; }
+        100% { width: 95%; }
+      }
+    </style>
+  </head>
+
+  <body class="bg-[#0a0a0f] font-sans text-[#f0ede8] flex items-center justify-center min-h-screen overflow-hidden">
+
+    <div
+      id="main-card"
+      class="relative z-10 bg-[#13131a] border border-white/[0.07] rounded-2xl px-11 py-12 w-full max-w-sm text-center
+             shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_32px_64px_rgba(0,0,0,0.5),0_0_80px_rgba(66,133,244,0.04)]
+             animate-cardIn"
+    >
+      <!-- Google G Logo -->
+      <svg class="w-14 h-14 mx-auto mb-7 animate-logoIn" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+
+      <!-- Title -->
+      <h1 class="font-serif text-[26px] font-normal tracking-tight mb-2.5 animate-fadeUp1">
+        Signing you in
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="text-sm font-light text-[#6b6878] leading-relaxed mb-9 animate-fadeUp2">
+        Connecting securely to Google.<br/>You'll be redirected in a moment.
+      </p>
+
+      <!-- Progress bar -->
+      <div class="bg-white/5 rounded-full h-[3px] overflow-hidden mb-6 animate-fadeUp3">
+        <div class="progress-fill h-full rounded-full bg-gradient-to-r from-[#4285f4] to-[#34a853]"></div>
+      </div>
+
+      <!-- Dots -->
+      <div class="flex justify-center gap-1.5 animate-fadeUp4">
+        <div class="w-1.5 h-1.5 rounded-full bg-[#4285f4] animate-dot1"></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-[#ea4335] animate-dot2"></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-[#fbbc05] animate-dot3"></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-[#34a853] animate-dot4"></div>
+      </div>
+
+      <!-- Status text -->
+      <p
+        id="status-text"
+        class="mt-7 text-[11px] font-normal text-[#6b6878] tracking-widest uppercase transition-opacity duration-300 animate-fadeUp5"
+      >
+        Establishing secure connection…
+      </p>
+    </div>
+
+    <script>
+      const statusMessages = [
+        "Establishing secure connection…",
+        "Contacting Google…",
+        "Almost there…",
+      ];
+      let msgIndex = 0;
+      const statusEl = document.getElementById("status-text");
+
+      const cycleStatus = setInterval(() => {
+        msgIndex = (msgIndex + 1) % statusMessages.length;
+        statusEl.style.opacity = "0";
+        setTimeout(() => {
+          statusEl.textContent = statusMessages[msgIndex];
+          statusEl.style.opacity = "1";
+        }, 300);
+      }, 2000);
+
+      function showError(msg) {
+        clearInterval(cycleStatus);
+        document.getElementById("main-card").innerHTML = `
+          <div>
+            <div style="width:52px;height:52px;background:rgba(234,67,53,0.1);border:1px solid rgba(234,67,53,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;font-size:22px;">
+              ⚠
+            </div>
+            <h2 class="font-serif text-[22px] text-[#f0ede8] mb-2.5">Redirect Failed</h2>
+            <p class="text-[13px] text-[#6b6878] leading-relaxed mb-7">
+              Something went wrong while connecting to Google.<br/>
+              ${msg ? `<span class="opacity-60 text-xs">${msg}</span>` : "Please try again."}
+            </p>
+            <a
+              href="javascript:location.reload()"
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500/10 border border-orange-500/25 rounded-xl
+                     text-orange-400 text-[13px] font-medium no-underline
+                     transition-all duration-200 hover:bg-orange-500/20 hover:-translate-y-px"
+            >
+              ↺ &nbsp;Try Again
+            </a>
+          </div>`;
+      }
+
+      (async () => {
+        try {
+          const response = await fetch(
+            "<%= betterAuthUrl %>/api/auth/sign-in/social",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({
+                provider: "google",
+                callbackURL: "<%= callbackURL %>",
+              }),
+            }
+          );
+          const data = await response.json();
+          if (data.url) {
+            window.location.href = data.url;
+          } else {
+            showError(null);
+          }
+        } catch (error) {
+          showError(error.message);
+        }
+      })();
+    </script>
+  </body>
+</html>
