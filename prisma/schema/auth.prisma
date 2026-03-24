@@ -16,7 +16,7 @@ model User {
 
   admin    Admin?
   customer Customer?
-  
+
   @@unique([email])
   @@map("user")
 }
