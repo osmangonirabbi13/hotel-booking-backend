@@ -13,6 +13,14 @@ router.post(
   BedTypeController.createBedType
 );
 
+router.get("/", BedTypeController.getAllBedTypes);
 
+router.patch(
+  "/:id",
+  validateRequest(BedTypeValidation.updateBedTypeZodSchema),
+  BedTypeController.updateBedType
+);
+
+router.delete("/:id", BedTypeController.deleteBedType);
 
 export const BedTypeRoutes = router;
