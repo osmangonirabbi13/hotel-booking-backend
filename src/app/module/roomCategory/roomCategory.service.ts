@@ -1,16 +1,30 @@
-import { RoomCategory } from "../../../generated/prisma/client"
-import { prisma } from "../../lib/prisma"
+import { RoomCategory } from "../../../generated/prisma/client";
+import { prisma } from "../../lib/prisma";
 
-const createRoomCategory = async (payload : RoomCategory) : Promise<RoomCategory> =>{
+const createRoomCategory = async (
+  payload: RoomCategory,
+): Promise<RoomCategory> => {
 
-    const roomcategory = await prisma.roomCategory.create({
-        data : payload
-    })  
+  const existing = await prisma.roomCategory.findUnique({
+    where: {
+      name: payload.name
+    }
+  });
 
-    return roomcategory
+  if (existing) {
+    throw new Error(`"${payload.name}" already exists. Please choose a different name.`);
+  }
 
-}
+  const roomcategory = await prisma.roomCategory.create({
+    data: payload,
+  });
+
+  return roomcategory;
+};
+
+
+
 
 export const RoomCategoryService = {
-    createRoomCategory
-}
+  createRoomCategory,
+};
