@@ -8,6 +8,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { jwtUtils } from "../../utils/jwt";
 import { envVars } from "../../config/env";
 import { IChangePasswordPayload } from "./auth.interface";
+import { IRequestUser } from "../../interfaces/requestUser.interface";
 
 interface IRegisterCustomerPayload {
   name: string;
@@ -271,9 +272,64 @@ const changePassword = async (
   };
 };
 
+const getMe = async (user: IRequestUser) => {
+  const isUserExists = await prisma.user.findUnique({
+    where: {
+      id: user.userId,
+    },
+    include: {
+        customer: {
+            include: {
+                bookings: true,
+                reviews: true,
+            }
+      },
+      admin: true,
+    },              
+  });
+
+  if (!isUserExists) {
+    throw new AppError(status.NOT_FOUND, "user not found");
+  }
+
+  return isUserExists;
+};
+
+const logoutUser = async (sessionToken: string) => {
+  const result = await auth.api.signOut({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  return result;
+};
+
+// const verifyEmail = async (email: string, otp: string) => {
+//   const result = await auth.api.verifyEmailOTP({
+//     body: {
+//       email,
+//       otp,
+//     },
+//   });
+
+//   if (result.status && !result.user.emailVerified) {
+//     await prisma.user.update({
+//       where: {
+//         email,
+//       },
+//       data: {
+//         emailVerified: true,
+//       },
+//     });
+//   }
+// };
+
 export const AuthService = {
   registerCustomer,
   loginUser,
   getNewToken,
   changePassword,
+  logoutUser,
+  getMe
 };
