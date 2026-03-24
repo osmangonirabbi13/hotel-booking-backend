@@ -42,8 +42,21 @@ const updateRoomCategory = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+
+const deleteRoomCategory = catchAsync(async (req: Request, res: Response) => {
+  await RoomCategoryService.deleteRoomCategory(req.params.id as string);
+
+  sendResponse(res, {
+    httpStatusCode: httpStatus.OK,
+    success: true,
+    message: "Room category deleted successfully",
+    data: null,
+  });
+});
+
 export const RoomCategoryController = {
   createRoomCategory,
   getAllRoomCategories,
   updateRoomCategory,
+  deleteRoomCategory,
 };

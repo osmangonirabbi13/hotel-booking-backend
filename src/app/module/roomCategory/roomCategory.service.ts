@@ -49,8 +49,24 @@ const updateRoomCategory = async (
 };
 
 
+const deleteRoomCategory = async (id: string) => {
+  const category = await prisma.roomCategory.findUnique({ where: { id } });
+  if (!category) throw new Error("Room category not found");
+
+  const roomCount = await prisma.room.count({ where: { categoryId: id } });
+  if (roomCount > 0) {
+    throw new Error(
+      `This category has ${roomCount} rooms, it cannot be deleted`
+    );
+  }
+
+  return prisma.roomCategory.delete({ where: { id } });
+};
+
+
 export const RoomCategoryService = {
   createRoomCategory,
   getAllRoomCategories,
     updateRoomCategory,
+    deleteRoomCategory,
 };

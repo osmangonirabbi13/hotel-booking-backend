@@ -16,4 +16,6 @@ router.patch(
   RoomCategoryController.updateRoomCategory
 );
 
+router.delete("/:id", RoomCategoryController.deleteRoomCategory);
+
 export const RoomCategoryRoutes = router;
