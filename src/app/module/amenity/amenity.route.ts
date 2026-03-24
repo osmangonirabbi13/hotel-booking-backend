@@ -12,6 +12,15 @@ router.post(
   AmenityController.createAmenity
 );
 
+router.get("/", AmenityController.getAllAmenities);
 
+
+router.patch(
+  "/:id",
+  validateRequest(AmenityValidation.updateAmenityZodSchema),
+  AmenityController.updateAmenity
+);
+
+router.delete("/:id", AmenityController.deleteAmenity);
 
 export const AmenityRoutes = router;
