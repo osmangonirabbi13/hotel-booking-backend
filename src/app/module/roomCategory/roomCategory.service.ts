@@ -7,7 +7,7 @@ const createRoomCategory = async (
 
   const existing = await prisma.roomCategory.findUnique({
     where: {
-      name: payload.name
+      name: payload.name,
     }
   });
 
@@ -23,8 +23,15 @@ const createRoomCategory = async (
 };
 
 
+const getAllRoomCategories = async () => {
+  return prisma.roomCategory.findMany({
+    orderBy: { name: "asc" },
+  });
+};
+
 
 
 export const RoomCategoryService = {
   createRoomCategory,
+  getAllRoomCategories,
 };

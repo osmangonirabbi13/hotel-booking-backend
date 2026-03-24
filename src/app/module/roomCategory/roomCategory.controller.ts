@@ -17,6 +17,18 @@ const createRoomCategory = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllRoomCategories = catchAsync(async (req: Request, res: Response) => {
+  const result = await RoomCategoryService.getAllRoomCategories();
+
+  sendResponse(res, {
+    httpStatusCode: httpStatus.OK,
+    success: true,
+    message: "Room categories retrieved successfully",
+    data: result,
+  });
+});
+
 export const RoomCategoryController = {
   createRoomCategory,
+  getAllRoomCategories
 };
