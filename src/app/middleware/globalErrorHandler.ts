@@ -15,6 +15,7 @@ import {
   handlerPrismaClientInitializationError,
   handlerPrismaClientRustPanicError,
 } from "../errorHelpers/handlePrismaErrors";
+import { deleteFileFromCloudinary } from "../config/cloudinary.config";
 
 export const globalErrorHandler = async (
   err: unknown,
@@ -26,14 +27,14 @@ export const globalErrorHandler = async (
     console.log("Error from Global Error Handler", err);
   }
 
-  // if (req.file) {
-  //   await deleteFileFromCloudinary(req.file.path);
-  // }
+  if (req.file) {
+    await deleteFileFromCloudinary(req.file.path);
+  }
 
-  // if (req.files && Array.isArray(req.files) && req.files.length > 0) {
-  //   const imageUrls = req.files.map((file) => file.path);
-  //   await Promise.all(imageUrls.map((url) => deleteFileFromCloudinary(url)));
-  // }
+  if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+    const imageUrls = req.files.map((file) => file.path);
+    await Promise.all(imageUrls.map((url) => deleteFileFromCloudinary(url)));
+  }
 
 
 
