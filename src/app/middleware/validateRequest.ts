@@ -1,23 +1,23 @@
 import { NextFunction, Request, Response } from "express";
 import * as z from "zod";
 
-export const validateRequest = (zodSchema: z.ZodObject) => {
+export const validateRequest = (zodSchema: z.ZodTypeAny) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (req.body?.data) {
+        req.body = JSON.parse(req.body.data);
+      }
 
-    if(req.body.data){
-      req.body = JSON.parse(req.body.data)
+      const parsedResult = zodSchema.safeParse(req.body);
+
+      if (!parsedResult.success) {
+        return next(parsedResult.error);
+      }
+
+      req.body = parsedResult.data;
+      return next();
+    } catch (error) {
+      return next(error);
     }
-
-
-    const parsedResult = zodSchema.safeParse(req.body);
-
-    if (!parsedResult.success) {
-      next(parsedResult.error);
-    }
-
-    //sanitizing the data
-    req.body = parsedResult.data;
-
-    next();
   };
 };

@@ -4,24 +4,86 @@ import { RoomService } from "./room.service";
 import { sendResponse } from "../../shared/sendResponse";
 import status from "http-status";
 import { IQueryParams } from "../../interfaces/query.interface";
+import { ICreateRoomPayload } from "./room.interface";
+import { uploadFileToCloudinary } from "../../config/cloudinary.config";
 
-const createRoom = catchAsync(async (req : Request, res : Response) => {
-  const result = await RoomService.createRoom(req.body);
+const createRoom = catchAsync(async (req: Request, res: Response) => {
+  const files = req.files as {
+    [fieldname: string]: Express.Multer.File[];
+  };
+
+  const payload: ICreateRoomPayload = req.body;
+
+  let featuredImageUrl = "";
+  let sliderImageUrls: string[] = [];
+
+  if (files?.featuredImage?.[0]) {
+    const uploadedFeaturedImage = await uploadFileToCloudinary(
+      files.featuredImage[0].buffer,
+      files.featuredImage[0].originalname,
+    );
+
+    featuredImageUrl = uploadedFeaturedImage.secure_url;
+  }
+
+  if (files?.sliderImages?.length) {
+    const uploadedSliderImages = await Promise.all(
+      files.sliderImages.map((file) =>
+        uploadFileToCloudinary(file.buffer, file.originalname),
+      ),
+    );
+
+    sliderImageUrls = uploadedSliderImages.map((img) => img.secure_url);
+  }
+
+  payload.featuredImage = featuredImageUrl;
+  payload.sliderImages = sliderImageUrls;
+
+  payload.rent = Number(payload.rent);
+  payload.totalUnits = Number(payload.totalUnits);
+  payload.numberOfBaths = Number(payload.numberOfBaths);
+  payload.maxGuests = Number(payload.maxGuests);
+
+  if (payload.roomSize !== undefined) {
+    payload.roomSize = Number(payload.roomSize);
+  }
+
+  if (payload.maxAdults !== undefined) {
+    payload.maxAdults = Number(payload.maxAdults);
+  }
+
+  if (payload.maxChildren !== undefined) {
+    payload.maxChildren = Number(payload.maxChildren);
+  }
+
+  const parseBoolean = (value: unknown): boolean => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") return value === "true";
+    return false;
+  };
+
+  payload.isEventSpace = parseBoolean(payload.isEventSpace);
+  payload.isFeatured = parseBoolean(payload.isFeatured);
+  payload.enableDynamicPricing = parseBoolean(payload.enableDynamicPricing);
+
+  payload.isActive =
+    payload.isActive === undefined ? true : parseBoolean(payload.isActive);
+
+  const result = await RoomService.createRoom(payload);
 
   sendResponse(res, {
-     httpStatusCode: status.CREATED,
     success: true,
+    httpStatusCode: status.CREATED,
     message: "Room created successfully",
     data: result,
   });
 });
 
-
 const getAllRooms = catchAsync(async (req: Request, res: Response) => {
   const result = await RoomService.getAllRooms(req.query as IQueryParams);
 
   sendResponse(res, {
-     httpStatusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Rooms retrieved successfully",
     meta: result.meta,
@@ -35,7 +97,7 @@ const getSingleRoom = catchAsync(async (req: Request, res: Response) => {
   const result = await RoomService.getSingleRoom(id as string);
 
   sendResponse(res, {
-     httpStatusCode: status.OK,
+    httpStatusCode: status.OK,
     success: true,
     message: "Room retrieved successfully",
     data: result,
@@ -70,8 +132,8 @@ const deleteRoom = catchAsync(async (req: Request, res: Response) => {
 
 export const RoomController = {
   createRoom,
-    getAllRooms,
-    getSingleRoom,
-    updateRoom,
-    deleteRoom,
+  getAllRooms,
+  getSingleRoom,
+  updateRoom,
+  deleteRoom,
 };
