@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { v7 as uuidv7 } from "uuid";
 import status from "http-status";
 
@@ -14,6 +15,9 @@ import {
 
 import { IBookBookingPayload } from "./booking.interface";
 import { stripe } from "../../config/stripe.config";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { Booking, Prisma } from "../../../generated/prisma/client";
+import { bookingFilterableFields, bookingIncludeConfig, bookingSearchableFields } from "./booking.constant";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper: date overlap check
@@ -239,16 +243,37 @@ const initiateBookingPayment = async (
 // ─────────────────────────────────────────────────────────────────────────────
 // My bookings
 // ─────────────────────────────────────────────────────────────────────────────
-const getMyBookings = async (user: IRequestUser) => {
+const getMyBookings = async (
+  user: IRequestUser,
+  query: Record<string, any>
+) => {
   const customerData = await prisma.customer.findUniqueOrThrow({
-    where: { email: user.email },
+    where: {
+      email: user.email,
+    },
   });
 
-  return prisma.booking.findMany({
-    where:   { customerId: customerData.id },
-    include: { room: true, payment: true },
-    orderBy: { createdAt: "desc" },
+  const queryBuilder = new QueryBuilder<
+    Booking,
+    Prisma.BookingWhereInput,
+    Prisma.BookingInclude
+  >(prisma.booking, query, {
+    searchableFields: [],
+    filterableFields: [],
   });
+
+  const result = await queryBuilder
+    .where({
+      customerId: customerData.id,
+    })
+    .include({
+      room: true,
+      payment: true,
+    })
+    .paginate()
+    .execute();
+
+  return result;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -274,11 +299,35 @@ const getMySingleBooking = async (bookingId: string, user: IRequestUser) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Admin: all bookings
 // ─────────────────────────────────────────────────────────────────────────────
-const getAllBookings = async () => {
-  return prisma.booking.findMany({
-    include: { customer: true, room: true, payment: true },
-    orderBy: { createdAt: "desc" },
+const getAllBookings = async (query: Record<string, any>) => {
+  const queryBuilder = new QueryBuilder<
+    Booking,
+    Prisma.BookingWhereInput,
+    Prisma.BookingInclude
+  >(prisma.booking, query, {
+    searchableFields: bookingSearchableFields,
+    filterableFields: bookingFilterableFields,
   });
+
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .include({
+      customer: {
+        include: {
+          user: true,
+        },
+      },
+      room: true,
+      payment: true,
+    })
+    .dynamicInclude(bookingIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
+
+  return result;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 
+
 const bookBooking = catchAsync(async (req :Request, res : Response) => {
   const result = await BookingService.bookBooking(req.body, req.user);
 
@@ -32,7 +33,7 @@ const initiateBookingPayment = catchAsync(async (req, res) => {
 });
 
 const getMyBookings = catchAsync(async (req, res) => {
-  const result = await BookingService.getMyBookings(req.user);
+  const result = await BookingService.getMyBookings(req.user, req.query);
 
   sendResponse(res, {
      httpStatusCode: status.OK,
@@ -57,7 +58,7 @@ const getMySingleBooking = catchAsync(async (req, res) => {
 });
 
 const getAllBookings = catchAsync(async (req, res) => {
-  const result = await BookingService.getAllBookings();
+  const result = await BookingService.getAllBookings( req.query);
 
   sendResponse(res, {
      httpStatusCode: status.OK,

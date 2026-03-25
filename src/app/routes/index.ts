@@ -8,6 +8,7 @@ import { ExtraServiceRoutes } from "../module/extraService/extraService.route";
 import { RoomRoutes } from '../module/room/room.route';
 import { CustomerRoutes } from "../module/customer/customer.route";
 import { BookingRoutes } from "../module/booking/booking.route";
+import { AdminRoutes } from "../module/admin/admin.route";
 
 
 const router = Router();
@@ -21,6 +22,6 @@ router.use("/amenities", AmenityRoutes)
 router.use("/extra-services", ExtraServiceRoutes)
 router.use("/rooms", RoomRoutes)
 router.use("/bookings", BookingRoutes)
-
+router.use("/admins", AdminRoutes)
 
 export const IndexRoutes = router;

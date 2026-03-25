@@ -33,7 +33,7 @@ const createRoom = async (payload: ICreateRoomPayload): Promise<any> => {
   const uniqueAmenityIds = [...new Set(amenityIds)];
   const uniqueExtraServiceIds = [...new Set(extraServiceIds)];
 
-  // 🔥 category check
+ 
   const categoryExists = await prisma.roomCategory.findUnique({
     where: { id: roomData.categoryId },
   });
@@ -42,7 +42,7 @@ const createRoom = async (payload: ICreateRoomPayload): Promise<any> => {
     throw new AppError(status.NOT_FOUND, "Room category not found");
   }
 
-  // 🔥 bedType check
+ 
   const bedTypeExists = await prisma.bedType.findUnique({
     where: { id: roomData.bedTypeId },
   });
@@ -51,7 +51,7 @@ const createRoom = async (payload: ICreateRoomPayload): Promise<any> => {
     throw new AppError(status.NOT_FOUND, "Bed type not found");
   }
 
-  // 🔥 admin check
+
   if (roomData.adminId) {
     const adminExists = await prisma.admin.findUnique({
       where: { id: roomData.adminId },
@@ -62,7 +62,7 @@ const createRoom = async (payload: ICreateRoomPayload): Promise<any> => {
     }
   }
 
-  // 🔥 amenities check
+ 
   if (uniqueAmenityIds.length > 0) {
     const amenities = await prisma.amenity.findMany({
       where: { id: { in: uniqueAmenityIds } },
@@ -74,7 +74,7 @@ const createRoom = async (payload: ICreateRoomPayload): Promise<any> => {
     }
   }
 
-  // 🔥 extra services check
+  
   if (uniqueExtraServiceIds.length > 0) {
     const services = await prisma.extraService.findMany({
       where: { id: { in: uniqueExtraServiceIds } },
@@ -89,7 +89,7 @@ const createRoom = async (payload: ICreateRoomPayload): Promise<any> => {
     }
   }
 
-  // 🔥 transaction
+  
   const result = await prisma.$transaction(async (tx) => {
     const createdRoom = await tx.room.create({
       data: {
@@ -103,7 +103,7 @@ const createRoom = async (payload: ICreateRoomPayload): Promise<any> => {
       },
     });
 
-    // 🔥 amenities relation
+ 
     if (uniqueAmenityIds.length > 0) {
       await tx.roomAmenity.createMany({
         data: uniqueAmenityIds.map((amenityId) => ({
@@ -113,7 +113,7 @@ const createRoom = async (payload: ICreateRoomPayload): Promise<any> => {
       });
     }
 
-    // 🔥 extra services relation
+    
     if (uniqueExtraServiceIds.length > 0) {
       await tx.roomExtraService.createMany({
         data: uniqueExtraServiceIds.map((extraServiceId) => ({
