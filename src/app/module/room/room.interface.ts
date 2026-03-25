@@ -35,7 +35,7 @@ export type ICreateRoomPayload = {
 
 
 
-export interface IUpdateRoomPayload {
+export type IUpdateRoomPayload = {
   rent?: number;
   totalUnits?: number;
   roomSize?: number;
@@ -62,8 +62,10 @@ export interface IUpdateRoomPayload {
   seoTitle?: string;
   seoDescription?: string;
 
-  adminId?: string | null;
-
+  adminId?: string;
   amenityIds?: string[];
   extraServiceIds?: string[];
-}
+
+  removeFeaturedImage?: boolean;
+  deletedSliderImages?: string[];
+};

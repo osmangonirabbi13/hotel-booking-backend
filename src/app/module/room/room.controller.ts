@@ -4,7 +4,7 @@ import { RoomService } from "./room.service";
 import { sendResponse } from "../../shared/sendResponse";
 import status from "http-status";
 import { IQueryParams } from "../../interfaces/query.interface";
-import { ICreateRoomPayload } from "./room.interface";
+import { ICreateRoomPayload, IUpdateRoomPayload } from "./room.interface";
 import { uploadFileToCloudinary } from "../../config/cloudinary.config";
 
 const createRoom = catchAsync(async (req: Request, res: Response) => {
@@ -106,12 +106,41 @@ const getSingleRoom = catchAsync(async (req: Request, res: Response) => {
 
 const updateRoom = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const payload = req.body as IUpdateRoomPayload;
 
-  const result = await RoomService.updateRoom(id as string, req.body);
+  const files = req.files as {
+    [fieldname: string]: Express.Multer.File[];
+  };
+
+  // new featured image upload
+  if (files?.featuredImage?.[0]) {
+    const uploadedFeaturedImage = await uploadFileToCloudinary(
+      files.featuredImage[0].buffer,
+      files.featuredImage[0].originalname,
+    );
+
+    payload.featuredImage = uploadedFeaturedImage.secure_url;
+  }
+
+  // new slider images upload
+  let uploadedSliderImageUrls: string[] = [];
+  if (files?.sliderImages?.length) {
+    const uploadedSliderImages = await Promise.all(
+      files.sliderImages.map((file) =>
+        uploadFileToCloudinary(file.buffer, file.originalname),
+      ),
+    );
+
+    uploadedSliderImageUrls = uploadedSliderImages.map((img) => img.secure_url);
+  }
+
+  payload.sliderImages = uploadedSliderImageUrls;
+
+  const result = await RoomService.updateRoom(id as string, payload);
 
   sendResponse(res, {
-    httpStatusCode: status.OK,
     success: true,
+    httpStatusCode: status.OK,
     message: "Room updated successfully",
     data: result,
   });

@@ -7,6 +7,7 @@ import { ICreateRoomPayload, IUpdateRoomPayload } from "./room.interface";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { IQueryParams } from "../../interfaces/query.interface";
 import { roomFilterableFields, roomSearchableFields } from "./room.constant";
+import { deleteFileFromCloudinary } from "../../config/cloudinary.config";
 
 const roomIncludeConfig: Prisma.RoomInclude = {
   category: true,
@@ -216,7 +217,7 @@ const getSingleRoom = async (id: string): Promise<Room | null> => {
 
 const updateRoom = async (
   id: string,
-  payload: IUpdateRoomPayload,
+  payload: IUpdateRoomPayload
 ): Promise<Room> => {
   const existingRoom = await prisma.room.findUnique({
     where: { id },
@@ -226,7 +227,15 @@ const updateRoom = async (
     throw new AppError(status.NOT_FOUND, "Room not found");
   }
 
-  const { amenityIds, extraServiceIds, ...roomData } = payload;
+  const {
+    amenityIds,
+    extraServiceIds,
+    deletedSliderImages = [],
+    removeFeaturedImage,
+    sliderImages: newSliderImages = [],
+    featuredImage: newFeaturedImage,
+    ...roomData
+  } = payload;
 
   if (roomData.categoryId) {
     const category = await prisma.roomCategory.findUnique({
@@ -284,15 +293,53 @@ const updateRoom = async (
     if (extraServices.length !== [...new Set(extraServiceIds)].length) {
       throw new AppError(
         status.BAD_REQUEST,
-        "One or more extra services not found",
+        "One or more extra services not found"
       );
     }
+  }
+
+  // featured image logic
+  let finalFeaturedImage = existingRoom.featuredImage;
+
+  if (removeFeaturedImage) {
+    if (existingRoom.featuredImage) {
+      await deleteFileFromCloudinary(existingRoom.featuredImage);
+    }
+    finalFeaturedImage = null;
+  }
+
+  if (newFeaturedImage) {
+    if (existingRoom.featuredImage) {
+      await deleteFileFromCloudinary(existingRoom.featuredImage);
+    }
+    finalFeaturedImage = newFeaturedImage;
+  }
+
+  // slider image logic
+  let finalSliderImages = existingRoom.sliderImages || [];
+
+  if (deletedSliderImages.length > 0) {
+    for (const imageUrl of deletedSliderImages) {
+      await deleteFileFromCloudinary(imageUrl);
+    }
+
+    finalSliderImages = finalSliderImages.filter(
+      (img) => !deletedSliderImages.includes(img)
+    );
+  }
+
+  if (newSliderImages.length > 0) {
+    finalSliderImages = [...finalSliderImages, ...newSliderImages];
   }
 
   const result = await prisma.$transaction(async (tx) => {
     await tx.room.update({
       where: { id },
-      data: roomData,
+      data: {
+        ...roomData,
+        featuredImage: finalFeaturedImage,
+        sliderImages: finalSliderImages,
+      },
     });
 
     if (amenityIds) {

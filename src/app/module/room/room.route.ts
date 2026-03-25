@@ -1,12 +1,11 @@
 import express from "express";
 
-
 import { RoomController } from "./room.controller";
 import { multerUpload } from "../../config/multer.config";
 import { createRoomMiddleware } from "./room.middleware";
 import { validateRequest } from "../../middleware/validateRequest";
 import { RoomValidation } from "./room.validation";
-
+import { updateRoomMiddleware } from "./updateRoomMiddleware";
 
 const router = express.Router();
 
@@ -18,13 +17,22 @@ router.post(
   ]),
   createRoomMiddleware,
   validateRequest(RoomValidation.createRoomZodSchema),
-  RoomController.createRoom
+  RoomController.createRoom,
 );
 
 router.get("/", RoomController.getAllRooms);
 
 router.get("/:id", RoomController.getSingleRoom);
-router.patch("/:id", RoomController.updateRoom);
+router.patch(
+  "/:id",
+  multerUpload.fields([
+    { name: "featuredImage", maxCount: 1 },
+    { name: "sliderImages", maxCount: 10 },
+  ]),
+  updateRoomMiddleware,
+  validateRequest(RoomValidation.updateRoomZodSchema),
+  RoomController.updateRoom,
+);
 router.delete("/:id", RoomController.deleteRoom);
 
 export const RoomRoutes = router;

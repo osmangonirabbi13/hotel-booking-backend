@@ -16,7 +16,7 @@ const registerCustomer = catchAsync(async (req: Request, res: Response) => {
   console.log({ maxAge });
   const payload = req.body;
 
-  console.log(payload);
+ 
 
   const result = await AuthService.registerCustomer(payload);
 
