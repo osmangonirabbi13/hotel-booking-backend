@@ -36,6 +36,8 @@ interface EnvConfig {
     STRIPE_SECRET_KEY: string;
     STRIPE_WEBHOOK_SECRET: string;
   };
+  ADMIN_EMAIL: string;
+  ADMIN_PASSWORD: string;
 }
 
 const loadEnvVariables = (): EnvConfig => {
@@ -65,6 +67,8 @@ const loadEnvVariables = (): EnvConfig => {
     "CLOUDINARY_CLOUD_NAME",
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
+    "ADMIN_EMAIL",
+    "ADMIN_PASSWORD",
   ];
 
   requireEnvVariable.forEach((variable) => {
@@ -109,9 +113,11 @@ const loadEnvVariables = (): EnvConfig => {
     },
     STRIPE: {
       STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
-      STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string, 
-  },
-}
+      STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
+    },
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL as string,
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD as string,
+  };
 };
 
 export const envVars = loadEnvVariables();
