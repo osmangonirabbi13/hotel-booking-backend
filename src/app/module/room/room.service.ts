@@ -3,7 +3,7 @@ import  { status } from "http-status";
 import { Prisma, Room } from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
-import { ICreateRoomPayload } from "./room.interface";
+import { ICreateRoomPayload, IUpdateRoomPayload } from "./room.interface";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { IQueryParams } from "../../interfaces/query.interface";
 import { roomFilterableFields, roomSearchableFields } from "./room.constant";
@@ -228,8 +228,213 @@ const getAllRooms = async (query: IQueryParams) => {
   return result;
 };
 
+const getSingleRoom = async (id: string): Promise<Room | null> => {
+  const result = await prisma.room.findUnique({
+    where: {
+      id,
+    },
+    include: roomIncludeConfig,
+  });
+
+  if (!result) {
+    throw new AppError(status.NOT_FOUND, "Room not found");
+  }
+
+  return result;
+};
+
+const updateRoom = async (
+  id: string,
+  payload: IUpdateRoomPayload
+): Promise<Room> => {
+  const existingRoom = await prisma.room.findUnique({
+    where: { id },
+  });
+
+  if (!existingRoom) {
+    throw new AppError(status.NOT_FOUND, "Room not found");
+  }
+
+  const {
+    amenityIds,
+    extraServiceIds,
+    ...roomData
+  } = payload;
+
+  if (roomData.categoryId) {
+    const category = await prisma.roomCategory.findUnique({
+      where: { id: roomData.categoryId },
+    });
+
+    if (!category) {
+      throw new AppError(status.NOT_FOUND, "Room category not found");
+    }
+  }
+
+  if (roomData.bedTypeId) {
+    const bedType = await prisma.bedType.findUnique({
+      where: { id: roomData.bedTypeId },
+    });
+
+    if (!bedType) {
+      throw new AppError(status.NOT_FOUND, "Bed type not found");
+    }
+  }
+
+  if (roomData.adminId) {
+    const admin = await prisma.admin.findUnique({
+      where: { id: roomData.adminId },
+    });
+
+    if (!admin) {
+      throw new AppError(status.NOT_FOUND, "Admin not found");
+    }
+  }
+
+  if (amenityIds) {
+    const amenities = await prisma.amenity.findMany({
+      where: {
+        id: {
+          in: amenityIds,
+        },
+      },
+    });
+
+    if (amenities.length !== [...new Set(amenityIds)].length) {
+      throw new AppError(status.BAD_REQUEST, "One or more amenities not found");
+    }
+  }
+
+  if (extraServiceIds) {
+    const extraServices = await prisma.extraService.findMany({
+      where: {
+        id: {
+          in: extraServiceIds,
+        },
+      },
+    });
+
+    if (extraServices.length !== [...new Set(extraServiceIds)].length) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        "One or more extra services not found"
+      );
+    }
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    await tx.room.update({
+      where: { id },
+      data: roomData,
+    });
+
+    if (amenityIds) {
+      await tx.roomAmenity.deleteMany({
+        where: {
+          roomId: id,
+        },
+      });
+
+      if (amenityIds.length > 0) {
+        await tx.roomAmenity.createMany({
+          data: [...new Set(amenityIds)].map((amenityId) => ({
+            roomId: id,
+            amenityId,
+          })),
+        });
+      }
+    }
+
+    if (extraServiceIds) {
+      await tx.roomExtraService.deleteMany({
+        where: {
+          roomId: id,
+        },
+      });
+
+      if (extraServiceIds.length > 0) {
+        await tx.roomExtraService.createMany({
+          data: [...new Set(extraServiceIds)].map((extraServiceId) => ({
+            roomId: id,
+            extraServiceId,
+          })),
+        });
+      }
+    }
+
+    const updatedRoom = await tx.room.findUniqueOrThrow({
+      where: { id },
+      include: roomIncludeConfig,
+    });
+
+    return updatedRoom;
+  });
+
+  return result;
+};
+
+const deleteRoom = async (id: string): Promise<Room> => {
+  const existingRoom = await prisma.room.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      bookings: true,
+      reviews: true,
+      amenities: true,
+      extraServices: true,
+    },
+  });
+
+  if (!existingRoom) {
+    throw new AppError(status.NOT_FOUND, "Room not found");
+  }
+
+  if (existingRoom.bookings.length > 0) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "This room has bookings and cannot be deleted"
+    );
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    await tx.roomAmenity.deleteMany({
+      where: {
+        roomId: id,
+      },
+    });
+
+    await tx.roomExtraService.deleteMany({
+      where: {
+        roomId: id,
+      },
+    });
+
+    await tx.review.deleteMany({
+      where: {
+        roomId: id,
+      },
+    });
+
+    const deletedRoom = await tx.room.delete({
+      where: {
+        id,
+      },
+      include: roomIncludeConfig,
+    });
+
+    return deletedRoom;
+  });
+
+  return result;
+};
+
+
 
 export const RoomService = {
   createRoom,
-  getAllRooms
+  getAllRooms,
+    getSingleRoom,
+    updateRoom,
+    deleteRoom,
 };
