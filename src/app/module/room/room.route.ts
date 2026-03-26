@@ -6,6 +6,8 @@ import { createRoomMiddleware } from "./room.middleware";
 import { validateRequest } from "../../middleware/validateRequest";
 import { RoomValidation } from "./room.validation";
 import { updateRoomMiddleware } from "./updateRoomMiddleware";
+import { checkAuth } from "../../middleware/checkAuth";
+import { Role } from "../../../generated/prisma/enums";
 
 const router = express.Router();
 
@@ -17,12 +19,14 @@ router.post(
   ]),
   createRoomMiddleware,
   validateRequest(RoomValidation.createRoomZodSchema),
+  checkAuth(Role.ADMIN),
   RoomController.createRoom,
 );
 
-router.get("/", RoomController.getAllRooms);
+router.get("/", checkAuth(Role.ADMIN , Role.CUSTOMER), RoomController.getAllRooms);
 
-router.get("/:id", RoomController.getSingleRoom);
+router.get("/:id", checkAuth(Role.ADMIN , Role.CUSTOMER), RoomController.getSingleRoom);
+
 router.patch(
   "/:id",
   multerUpload.fields([
@@ -33,6 +37,6 @@ router.patch(
   validateRequest(RoomValidation.updateRoomZodSchema),
   RoomController.updateRoom,
 );
-router.delete("/:id", RoomController.deleteRoom);
+router.delete("/:id",checkAuth(Role.ADMIN), RoomController.deleteRoom);
 
 export const RoomRoutes = router;
