@@ -1,5 +1,4 @@
-Hotel Booking Backend APIScalable and robust REST API for a modern hotel booking system. Built with a focus on security, performance, and developer experience.🚀 Features🔐 Authentication: JWT + Cookie-based secure session management.👥 Authorization: Role-based access control (ADMIN and CUSTOMER).🏨 Room Management: CRUD operations with image uploads via Cloudinary.📅 Booking System: Real-time availability and booking logic.💳 Payments: Integrated with Stripe for secure transactions.📊 Dashboard: Statistical overview for administrators.📧 Notifications: Automated emails using Nodemailer & EJS.✅ Validation: Schema validation at the edge with Zod.🧰 Tech StackRuntime: Node.jsFramework: Express.jsLanguage: TypeScriptORM: PrismaDatabase: PostgreSQLMedia: CloudinaryPayment: Stripe📁 Project StructurePlaintextsrc/
- 🏨 Hotel Booking Backend
+Hotel Booking Backend
 
 A scalable and production-ready REST API for a hotel booking system built with **Node.js**, **Express**, **TypeScript**, and **Prisma ORM**.
 
